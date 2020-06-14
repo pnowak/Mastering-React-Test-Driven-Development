@@ -2,6 +2,7 @@ import React from 'react';
 import ReactTestUtils from 'react-dom/test-utils';
 import { createContainer } from './domManipulators';
 import { AppointmentForm } from '../src/AppointmentForm';
+// import { it } from 'faker/lib/locales';
 
 describe('AppointmentForm', () => {
   let render, container;
@@ -117,6 +118,87 @@ describe('AppointmentForm', () => {
       );
       await ReactTestUtils.Simulate.change(field('service'), {
         target: { value: 'Cut', name: 'service' }
+      });
+      await ReactTestUtils.Simulate.submit(form('appointment'));
+    });
+  });
+
+  describe('stylist field', () => {
+    it('renders as a select box', () => {
+      render(<AppointmentForm />);
+      expect(field('stylist')).not.toBeNull();
+      expect(field('stylist').tagName).toEqual('SELECT');
+    });
+
+    it('initially has a blank value chosen', () => {
+      render(<AppointmentForm />);
+      const firstNode = field('stylist').childNodes[0];
+      expect(firstNode.value).toEqual('');
+      expect(firstNode.selected).toBeTruthy();
+    });
+
+    it('renders a label', () => {
+      render(<AppointmentForm />);
+      expect(labelFor('stylist')).not.toBeNull();
+      expect(labelFor('stylist').textContent).toEqual(
+        'Salon stylist'
+      );
+    });
+
+    it('assigns an id that matches the label id', () => {
+      render(<AppointmentForm />);
+      expect(field('stylist').id).toEqual('stylist');
+    });
+
+    it('lists stylist only if salon service is chosen', () => {
+      const stylists = {
+        'Cut': ['Mortimer', 'Lavon', 'Aditya', 'John', 'Audrey', 'Verdie', 'Harold']
+      };
+      const services = ['Cut', 'Blow-dry'];
+
+      render(
+        <AppointmentForm
+          selectableServices={services}
+          service="Cut"
+        />
+      );
+
+      const optionNodes = Array.from(field('stylist').childNodes);
+      const renderedServices = optionNodes.map(
+        node => node.textContent
+      );
+      expect(renderedServices).toEqual(
+        expect.arrayContaining(stylists['Cut'])
+      );
+    });
+
+    it('saves existing value when submitted', async () => {
+      expect.hasAssertions();
+      render(
+        <AppointmentForm
+          service="Cut"
+          stylist="Mortimer"
+          onSubmit={({ stylist }) =>
+            expect(stylist).toEqual('Mortimer')
+          }
+        />
+      );
+      await ReactTestUtils.Simulate.submit(form('appointment'));
+    });
+
+    it('saves new value when submitted', async () => {
+      expect.hasAssertions();
+      render(
+        <AppointmentForm
+          service="Cut"
+          stylist="Mortimer"
+          onSubmit={({ stylist }) =>
+            expect(stylist).toEqual('Audrey')
+          }
+        />
+      );
+      await ReactTestUtils.Simulate.change(field('stylist'), {
+        target: { value: 'Audrey', name: 'stylist' }
       });
       await ReactTestUtils.Simulate.submit(form('appointment'));
     });

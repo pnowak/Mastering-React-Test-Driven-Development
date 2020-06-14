@@ -108,6 +108,8 @@ const TimeSlotTable = ({
 export const AppointmentForm = ({
   selectableServices,
   service,
+  selectableStylists,
+  stylist,
   onSubmit,
   salonOpensAt,
   salonClosesAt,
@@ -117,6 +119,7 @@ export const AppointmentForm = ({
 }) => {
   const [appointment, setAppointment] = useState({
     service,
+    stylist,
     startsAt
   });
 
@@ -124,6 +127,12 @@ export const AppointmentForm = ({
     setAppointment(appointment => ({
       ...appointment,
       service: value
+    }));
+
+  const handleStylistChange = ({ target: { value } }) =>
+    setAppointment(appointment => ({
+      ...appointment,
+      stylist: value
     }));
 
   const handleStartsAtChange = useCallback(
@@ -134,6 +143,8 @@ export const AppointmentForm = ({
       })),
     []
   );
+
+  console.log(appointment);
 
   return (
     <form id="appointment" onSubmit={() => onSubmit(appointment)}>
@@ -147,6 +158,22 @@ export const AppointmentForm = ({
         {selectableServices.map(s => (
           <option key={s}>{s}</option>
         ))}
+      </select>
+      
+      <label htmlFor="stylist">Salon stylist</label>
+      <select 
+        name="stylist"
+        id="stylist"
+        value={stylist}
+        onChange={handleStylistChange}>
+        <option />
+        {appointment.service === void 0 ? (
+          null
+        ) : (
+            selectableStylists[appointment.service].map(st => (
+            <option key={st}>{st}</option>
+          )))
+        }
       </select>
 
       <TimeSlotTable
@@ -175,5 +202,23 @@ AppointmentForm.defaultProps = {
     'Beard trim',
     'Cut & beard trim',
     'Extensions'
-  ]
+  ],
+  // selectableStylists: {
+  //   'Mortimer': ['Cut', 'Blow-dry', 'Cut & color', 'Beard trim', 'Cut & beard trim', 'Extensions'],
+  //   'Lavon': ['Cut', 'Cut & color'],
+  //   'Aditya': ['Cut', 'Beard trim', 'Cut & beard trim'],
+  //   'John': ['Cut', 'Blow-dry', 'Cut & color', 'Beard trim', 'Cut & beard trim', 'Extensions'],
+  //   'Audrey': ['Cut', 'Blow-dry', 'Beard trim'],
+  //   'Verdie': ['Cut', 'Cut & color', 'Beard trim', 'Cut & beard trim', 'Extensions'],
+  //   'Harold': ['Cut']
+  // },
+  // OR
+  selectableStylists: {
+    'Cut': ['Mortimer', 'Lavon', 'Aditya', 'John', 'Audrey', 'Verdie', 'Harold'],
+    'Blow-dry': ['Mortimer', 'John', 'Audrey'],
+    'Cut & color': ['Mortimer', 'Lavon', 'John', 'Verdie'],
+    'Beard trim': ['Mortimer', 'Aditya', 'John', 'Audrey', 'Verdie'],
+    'Cut & beard trim': ['Mortimer', 'Aditya', 'John', 'Verdie'],
+    'Extensions': ['Mortimer', 'John', 'Verdie']
+  }
 };
