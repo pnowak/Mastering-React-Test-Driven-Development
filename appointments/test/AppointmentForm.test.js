@@ -150,7 +150,25 @@ describe('AppointmentForm', () => {
       expect(field('stylist').id).toEqual('stylist');
     });
 
-    it('lists stylist only if salon service is chosen', () => {
+    it('list stylist only if salon service is chosen (without chosen)', () => {
+      const services = ['Cut', 'Blow-dry'];
+
+      render(
+        <AppointmentForm
+          selectableServices={services}
+        />
+      );
+
+      const optionNodes = Array.from(field('stylist').childNodes);
+      const renderedServices = optionNodes.map(
+        node => node.textContent
+      );
+      expect(renderedServices).toEqual(
+        expect.arrayContaining([''])
+      );
+    });
+
+    it('list stylist only if salon service is chosen (with chosen)', () => {
       const stylists = {
         'Cut': ['Mortimer', 'Lavon', 'Aditya', 'John', 'Audrey', 'Verdie', 'Harold']
       };

@@ -171,8 +171,8 @@ export const AppointmentForm = ({
           null
         ) : (
             selectableStylists[appointment.service].map(st => (
-            <option key={st}>{st}</option>
-          )))
+              <option key={st}>{st}</option>
+            )))
         }
       </select>
 
