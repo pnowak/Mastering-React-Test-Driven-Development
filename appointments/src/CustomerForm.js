@@ -19,6 +19,7 @@ export const CustomerForm = ({
   onSave
 }) => {
   const [submitting, setSubmitting] = useState(false);
+  const [disabled, setDisabled] = useState(false);
   const [validationErrors, setValidationErrors] = useState({});
   const [error, setError] = useState(false);
 
@@ -28,11 +29,13 @@ export const CustomerForm = ({
     phoneNumber
   });
 
-  const handleChange = ({ target }) =>
+  const handleChange = ({ target }) => {
     setCustomer(customer => ({
       ...customer,
       [target.name]: target.value
-    }));
+    }))
+    setValidationErrors({ ...validationErrors, [target.name]: void 0 });
+  }
 
   const validators = {
     firstName: required('First name is required'),
@@ -77,6 +80,7 @@ export const CustomerForm = ({
       setSubmitting(false);
       if (result.ok) {
         setError(false);
+        setDisabled(true);
         const customerWithId = await result.json();
         onSave(customerWithId);
       } else if (result.status === 422) {
@@ -126,7 +130,7 @@ export const CustomerForm = ({
       />
       {renderError('phoneNumber')}
 
-      <input type="submit" value="Add" />
+      <input type="submit" value="Add" disabled={disabled} />
       {submitting ? (
         <span className="submittingIndicator" />
       ) : null}

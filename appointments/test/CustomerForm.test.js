@@ -140,6 +140,14 @@ describe('CustomerForm', () => {
     expect(element('.error')).not.toBeNull();
   });
 
+  it('disables submit button when form has been submitted', async () => {
+    render(<CustomerForm {...validCustomer} />);
+    const submitButton = element('input[type="submit"]');
+    
+    await submit(form('customer'));
+    expect(submitButton.disabled).toBeTruthy();
+  });
+
   it('renders field validation errors from server', async () => {
     const errors = {
       phoneNumber: 'Phone number already exists in the system'
@@ -325,5 +333,21 @@ describe('CustomerForm', () => {
 
       expect(element('.error')).toBeNull();
     });
+
+    it('removes validation error if the user correct them', () => {
+      render(<CustomerForm {...validCustomer} />);
+
+      blur(
+        field('customer', 'firstName'),
+        withEvent('firstName', '')
+      );
+
+      change(
+        field('customer', 'firstName'),
+        withEvent('firstName', 'value')
+      );
+      
+      expect(element('.error')).toBeNull();
+    })
   });
 });
