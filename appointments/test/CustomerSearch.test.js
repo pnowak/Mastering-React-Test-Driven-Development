@@ -1,5 +1,6 @@
 import React from 'react';
 import 'whatwg-fetch';
+import { act } from 'react-dom/test-utils';
 import { createContainer, withEvent } from './domManipulators';
 import { CustomerSearch } from '../src/CustomerSearch';
 import { fetchResponseOk } from './spyHelpers';
@@ -49,7 +50,7 @@ describe('CustomerSearch', () => {
 
   it('fetches all customer data when component mounts', async () => {
     await renderAndWait(<CustomerSearch />);
-    expect(window.fetch).toHaveBeenCalledWith('/customers', {
+    expect(window.fetch).toHaveBeenCalledWith('/customers?limit=10', {
       method: 'GET',
       credentials: 'same-origin',
       headers: { 'Content-Type': 'application/json' }
@@ -82,7 +83,7 @@ describe('CustomerSearch', () => {
     await renderAndWait(<CustomerSearch />);
     await clickAndWait(element('button#next-page'));
     expect(window.fetch).toHaveBeenLastCalledWith(
-      '/customers?after=9',
+      '/customers?limit=10&after=9',
       expect.anything()
     );
   });
@@ -109,7 +110,7 @@ describe('CustomerSearch', () => {
     await clickAndWait(element('button#next-page'));
     await clickAndWait(element('button#previous-page'));
     expect(window.fetch).toHaveBeenLastCalledWith(
-      '/customers',
+      '/customers?limit=10',
       expect.anything()
     );
   });
@@ -123,7 +124,7 @@ describe('CustomerSearch', () => {
     await clickAndWait(element('button#next-page'));
     await clickAndWait(element('button#previous-page'));
     expect(window.fetch).toHaveBeenLastCalledWith(
-      '/customers?after=9',
+      '/customers?limit=10&after=9',
       expect.anything()
     );
   });
@@ -138,9 +139,17 @@ describe('CustomerSearch', () => {
     await clickAndWait(element('button#previous-page'));
     await clickAndWait(element('button#previous-page'));
     expect(window.fetch).toHaveBeenLastCalledWith(
-      '/customers',
+      '/customers?limit=10',
       expect.anything()
     );
+  });
+
+  it.skip('previous button is disabled if the user is on the first page', async () => {
+    window.fetch.mockReturnValue(fetchResponseOk(tenCustomers));
+    await renderAndWait(<CustomerSearch />);
+    await act(async () => {
+      expect(element('button#previous-page').disabled).toBeTruthy();
+    });
   });
 
   it('has a search input field with a placeholder', async () => {
@@ -155,7 +164,7 @@ describe('CustomerSearch', () => {
     await renderAndWait(<CustomerSearch />);
     await changeAndWait(element('input'), withEvent('input', 'name'));
     expect(window.fetch).toHaveBeenLastCalledWith(
-      '/customers?searchTerm=name',
+      '/customers?limit=10&searchTerm=name',
       expect.anything()
     );
   });
@@ -166,7 +175,119 @@ describe('CustomerSearch', () => {
     await changeAndWait(element('input'), withEvent('input', 'name'));
     await clickAndWait(element('button#next-page'));
     expect(window.fetch).toHaveBeenLastCalledWith(
-      '/customers?after=9&searchTerm=name',
+      '/customers?limit=10&after=9&searchTerm=name',
+      expect.anything()
+    );
+  });
+
+  it('has a 10 limit button', async () => {
+    await renderAndWait(<CustomerSearch />);
+    expect(element('button#limit-10')).not.toBeNull();
+  });
+
+  it('requests ten customers by default', async () => {
+    window.fetch.mockReturnValue(fetchResponseOk(tenCustomers));
+    await renderAndWait(<CustomerSearch />);
+    expect(window.fetch).toHaveBeenLastCalledWith(
+      '/customers?limit=10',
+      expect.anything()
+    );
+  });
+
+  it('requests ten customers when you click in button 10', async () => {
+    window.fetch.mockReturnValue(fetchResponseOk(tenCustomers));
+    await renderAndWait(<CustomerSearch />);
+    await clickAndWait(element('button#limit-10'));
+    expect(window.fetch).toHaveBeenLastCalledWith(
+      '/customers?limit=10',
+      expect.anything()
+    );
+  });
+
+  it('includes ten customers when moving to next page', async () => {
+    window.fetch.mockReturnValue(fetchResponseOk(tenCustomers));
+    await renderAndWait(<CustomerSearch />);
+    await clickAndWait(element('button#next-page'));
+    expect(window.fetch).toHaveBeenLastCalledWith(
+      '/customers?limit=10&after=9',
+      expect.anything()
+    );
+  });
+
+  it('has a 20 limit button', async () => {
+    await renderAndWait(<CustomerSearch />);
+    expect(element('button#limit-20')).not.toBeNull();
+  });
+
+  it('requests twelve customers when you click in button 20', async () => {
+    window.fetch.mockReturnValue(fetchResponseOk(tenCustomers));
+    await renderAndWait(<CustomerSearch />);
+    await clickAndWait(element('button#limit-20'));
+    expect(window.fetch).toHaveBeenLastCalledWith(
+      '/customers?limit=20',
+      expect.anything()
+    );
+  });
+
+  it('includes twelve customers when moving to next page', async () => {
+    window.fetch.mockReturnValue(fetchResponseOk(tenCustomers));
+    await renderAndWait(<CustomerSearch />);
+    await clickAndWait(element('button#limit-20'));
+    await clickAndWait(element('button#next-page'));
+    expect(window.fetch).toHaveBeenLastCalledWith(
+      '/customers?limit=20&after=9',
+      expect.anything()
+    );
+  });
+
+  it('has a 50 limit button', async () => {
+    await renderAndWait(<CustomerSearch />);
+    expect(element('button#limit-50')).not.toBeNull();
+  });
+
+  it('requests fifty customers when you click in button 50', async () => {
+    window.fetch.mockReturnValue(fetchResponseOk(tenCustomers));
+    await renderAndWait(<CustomerSearch />);
+    await clickAndWait(element('button#limit-50'));
+    expect(window.fetch).toHaveBeenLastCalledWith(
+      '/customers?limit=50',
+      expect.anything()
+    );
+  });
+
+  it('includes fifty customers when moving to next page', async () => {
+    window.fetch.mockReturnValue(fetchResponseOk(tenCustomers));
+    await renderAndWait(<CustomerSearch />);
+    await clickAndWait(element('button#limit-50'));
+    await clickAndWait(element('button#next-page'));
+    expect(window.fetch).toHaveBeenLastCalledWith(
+      '/customers?limit=50&after=9',
+      expect.anything()
+    );
+  });
+
+  it('has a 100 limit button', async () => {
+    await renderAndWait(<CustomerSearch />);
+    expect(element('button#limit-100')).not.toBeNull();
+  });
+
+  it('requests hundred customers when you click in button 100', async () => {
+    window.fetch.mockReturnValue(fetchResponseOk(tenCustomers));
+    await renderAndWait(<CustomerSearch />);
+    await clickAndWait(element('button#limit-100'));
+    expect(window.fetch).toHaveBeenLastCalledWith(
+      '/customers?limit=100',
+      expect.anything()
+    );
+  });
+
+  it('includes hundred customers when moving to next page', async () => {
+    window.fetch.mockReturnValue(fetchResponseOk(tenCustomers));
+    await renderAndWait(<CustomerSearch />);
+    await clickAndWait(element('button#limit-100'));
+    await clickAndWait(element('button#next-page'));
+    expect(window.fetch).toHaveBeenLastCalledWith(
+      '/customers?limit=100&after=9',
       expect.anything()
     );
   });

@@ -1,7 +1,10 @@
 import React, { useEffect, useState, useCallback } from 'react';
 
-const searchParams = (after, searchTerm) => {
+const searchParams = (limit, after, searchTerm) => {
   let pairs = [];
+  if (limit) {
+    pairs.push(`limit=${limit}`);
+  }
   if (after) {
     pairs.push(`after=${after}`);
   }
@@ -14,8 +17,20 @@ const searchParams = (after, searchTerm) => {
   return '';
 };
 
-const SearchButtons = ({ handleNext, handlePrevious }) => (
+const SearchButtons = ({ handleLimit, handleNext, handlePrevious }) => (
   <div className="button-bar">
+    <button role="button" id="limit-10" value="10" onClick={handleLimit}>
+      10
+    </button>
+    <button role="button" id="limit-20" value="20" onClick={handleLimit}>
+      20
+    </button>
+    <button role="button" id="limit-50" value="50" onClick={handleLimit}>
+      50
+    </button>
+    <button role="button" id="limit-100" value="100" onClick={handleLimit}>
+      100
+    </button>
     <button
       role="button"
       id="previous-page"
@@ -38,12 +53,17 @@ const CustomerRow = ({ customer }) => (
 );
 
 export const CustomerSearch = () => {
+  const [limit, setLimit] = useState(10);
   const [customers, setCustomers] = useState([]);
   const [lastRowIds, setLastRowIds] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
 
   const handleSearchTextChanged = ({ target: { value } }) =>
     setSearchTerm(value);
+  
+  const handleLimit = useCallback(({ target: { value } }) => {
+    setLimit(value);
+  }, [limit]);
 
   const handleNext = useCallback(() => {
     const currentLastRowId = customers[customers.length - 1].id;
@@ -60,7 +80,7 @@ export const CustomerSearch = () => {
       let after;
       if (lastRowIds.length > 0)
         after = lastRowIds[lastRowIds.length - 1];
-      const queryString = searchParams(after, searchTerm);
+      const queryString = searchParams(limit, after, searchTerm);
 
       const result = await window.fetch(
         `/customers${queryString}`,
@@ -70,11 +90,12 @@ export const CustomerSearch = () => {
           headers: { 'Content-Type': 'application/json' }
         }
       );
+      
       setCustomers(await result.json());
     };
 
     fetchData();
-  }, [lastRowIds, searchTerm]);
+  }, [limit, lastRowIds, searchTerm]);
 
   return (
     <React.Fragment>
@@ -84,6 +105,7 @@ export const CustomerSearch = () => {
         placeholder="Enter filter text"
       />
       <SearchButtons
+        handleLimit={handleLimit}
         handleNext={handleNext}
         handlePrevious={handlePrevious}
       />
